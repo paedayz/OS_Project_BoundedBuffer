@@ -1,33 +1,52 @@
-import java.io.*;
+
+// A Java program for a Server 
 import java.net.*;
+import java.io.*;
 
 public class Server {
+    // initialize socket and input stream
+    private Socket socket = null;
+    private ServerSocket server = null;
+    private DataInputStream in = null;
 
-    public static void main(String[] args) {
+    // constructor with port
+    public Server(int port) {
+        // starts server and waits for a connection
         try {
-            
-            // create a socket at port # 6789
-            ServerSocket ss = new ServerSocket(6789);  // create a socket
-            System.out.println("A socket is created and now waiting for connection.");
+            server = new ServerSocket(port);
+            System.out.println("Server started");
 
-            // establish and wait for an incoming connection
-            Socket s = ss.accept();
-            System.out.println("A client has made a connection in.");
+            System.out.println("Waiting for a client ...");
 
-            DataInputStream din = new DataInputStream(s.getInputStream());
-            DataOutputStream dout = new DataOutputStream(s.getOutputStream());
+            socket = server.accept();
+            System.out.println("Client accepted");
 
-            // wait for input message and display it
-            System.out.println("Waiting for an incoming message...");
-            String str = (String) din.readUTF();
-            System.out.println("Message received: " + str);
+            // takes input from the client socket
+            in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
-            str = str + " " + str;
-            System.out.println("Now I'm going to write this message back:" + str);
-            dout.writeUTF(str);
+            String line = "";
 
-            ss.close();
+            // reads message from client until "Over" is sent
+            while (!line.equals("Over")) {
+                try {
+                    line = in.readUTF();
+                    System.out.println(line);
 
-        } catch (IOException e) { System.out.println(e); }
+                } catch (IOException i) {
+                    System.out.println(i);
+                }
+            }
+            System.out.println("Closing connection");
+
+            // close connection
+            socket.close();
+            in.close();
+        } catch (IOException i) {
+            System.out.println(i);
+        }
+    }
+
+    public static void main(String args[]) {
+        Server server = new Server(5000);
     }
 }

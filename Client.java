@@ -1,28 +1,56 @@
-import java.io.*;
+
+// A Java program for a Client 
 import java.net.*;
+import java.io.*;
 
 public class Client {
+    // initialize socket and input output streams
+    private Socket socket = null;
+    private DataInputStream input = null;
+    private DataOutputStream out = null;
 
-    public static void main(String[] args) {
+    // constructor to put ip address and port
+    public Client(String address, int port) {
+        // establish a connection
         try {
-            // create a socket to a local host with port # 6789
-            Socket s = new Socket("localhost", 6789);
-            
-            System.out.println("A connection is established and I'll now send a message");
+            socket = new Socket(address, port);
+            System.out.println("Connected");
 
-            DataOutputStream dout = new DataOutputStream(s.getOutputStream());
-            DataInputStream din = new DataInputStream(s.getInputStream());
+            // takes input from terminal
+            input = new DataInputStream(System.in);
 
-            //Thread.sleep(5000);
-            dout.writeUTF("Hello Server");
-            dout.flush();
+            // sends output to the socket
+            out = new DataOutputStream(socket.getOutputStream());
+        } catch (UnknownHostException u) {
+            System.out.println(u);
+        } catch (IOException i) {
+            System.out.println(i);
+        }
 
-            String str = (String) din.readUTF();
-            System.out.println("Message received from server: " + str);
+        // string to read message from input
+        String line = "";
 
-            dout.close();
-            s.close();
+        // keep reading until "Over" is input
+        while (!line.equals("Over")) {
+            try {
+                line = input.readLine();
+                out.writeUTF(line);
+            } catch (IOException i) {
+                System.out.println(i);
+            }
+        }
 
-        } catch (IOException e) { System.out.println(e); }
+        // close the connection
+        try {
+            input.close();
+            out.close();
+            socket.close();
+        } catch (IOException i) {
+            System.out.println(i);
+        }
+    }
+
+    public static void main(String args[]) {
+        Client client = new Client("127.0.0.1", 5000);
     }
 }

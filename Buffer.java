@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Random;
 
 /**
  *
@@ -50,7 +51,7 @@ public class Buffer {
     }
 }
 
-class Consumer extends Thread {
+class Consumer extends DoWork {
 
     private final Buffer buffer;
 
@@ -59,19 +60,17 @@ class Consumer extends Thread {
     }
 
     public void run() {
+
         try {
             sleep(10000);
         } catch (InterruptedException ex) {
             Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, ex);
         }
+
         while (!Thread.currentThread().isInterrupted()) {
-            try {
-                sleep(10000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            String c = buffer.delete();
-            System.out.println("\nConsumer : " + c);
+            String work = buffer.delete();
+            System.out.println("\n\nFrom HOUSEMAID : " + work);
+            work();
         }
     }
 }
@@ -87,13 +86,43 @@ class Producer extends Thread {
 
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            System.out.print("Producer : ");
-            String c = sc.nextLine();
-            if ("-1".equals(c))
+            System.out.print("From MASTER : ");
+            String work = sc.nextLine();
+            if ("-1".equals(work))
                 break; // -1 is eof
-            buffer.insert(c);
+            buffer.insert(work);
         }
     }
+}
+
+class DoWork extends Thread {
+
+    public static void work() {
+
+        Random rand = new Random();
+        int time = rand.nextInt(6) + 5;
+
+        System.out.print("\n   This work use " + time + " seconds to finish\n");
+
+        for (int i = 1; i <= time; i++) {
+            try {
+                sleep(1000);
+                System.out.print("\n    Still working... " + i + " second");
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        try {
+            sleep(1000);
+            System.out.print("\n    Finish !!\n");
+            sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
 }
 
 class BoundedBuffer {
