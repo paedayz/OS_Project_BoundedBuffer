@@ -45,7 +45,7 @@ public class Buffer {
             return ch;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return "i";
+            return "END";
         }
     }
 }
@@ -59,14 +59,19 @@ class Consumer extends Thread {
     }
 
     public void run() {
+        try {
+            sleep(10000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, ex);
+        }
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                sleep(5000);
+                sleep(10000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, ex);
             }
             String c = buffer.delete();
-            System.out.println("Consumer : " + c);
+            System.out.println("\nConsumer : " + c);
         }
     }
 }
@@ -82,6 +87,7 @@ class Producer extends Thread {
 
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
+            System.out.print("Producer : ");
             String c = sc.nextLine();
             if ("-1".equals(c))
                 break; // -1 is eof
