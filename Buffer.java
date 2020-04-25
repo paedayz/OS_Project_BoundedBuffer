@@ -3,7 +3,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author User PC
+ * @author Shutdownz 22C
  */
 public class Buffer {
     private final int MaxBuffSize;
@@ -18,7 +18,7 @@ public class Buffer {
         store = new String[MaxBuffSize];
     }
 
-    public synchronized void put(String ch) {
+    public synchronized void put(String num) {
 
         while (BufferSize == MaxBuffSize) {
             try {
@@ -28,7 +28,7 @@ public class Buffer {
             }
         }
         BufferEnd = (BufferEnd + 1) % MaxBuffSize;
-        store[BufferEnd] = ch;
+        store[BufferEnd] = num;
         BufferSize++;
         notifyAll();
     }
@@ -42,11 +42,11 @@ public class Buffer {
                 Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, e);
             }
         }
-        String ch = store[BufferStart];
+        String word = store[BufferStart];
         BufferStart = (BufferStart + 1) % MaxBuffSize;
         BufferSize--;
         notifyAll();
-        return ch;
+        return word;
     }
 }
 
@@ -61,7 +61,7 @@ class Consumer extends Thread {
     public void run() {
 
         try {
-            sleep(5000);
+            sleep(3000);
         } catch (InterruptedException ex) {
             Logger.getLogger(Consumer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -69,6 +69,7 @@ class Consumer extends Thread {
         String word;
 
         while (true) {
+
             String work = buffer.got();
             switch (work) {
                 case "0":
@@ -113,13 +114,14 @@ class Consumer extends Thread {
                     break;
 
                 default:
-                    word = "End";
+                    word = "";
                     break;
             }
-            if (word != "End") {
-                System.out.println("consumer : got " + word + "\n");
-            } else {
-                break;
+            System.out.println("Consumer\trunning\t\t--\t\t" + word);
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -135,37 +137,32 @@ class Producer extends Thread {
     public void run() {
         String num = "123456789";
         String[] word = num.split("");
-        int i = 0;
 
         while (true) {
 
-            if (i != word.length) {
-
+            for (int i = 0; i < word.length; i++) {
                 buffer.put(word[i]);
-                System.out.println("producer : put " + word[i]);
-                i++;
-            } else {
-                try {
-                    sleep(1000);
-                    break;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
+                System.out.println("Producer\trunning\t\t" + word[i] + "\t\t--");
             }
 
+            break;
+
         }
+
+        System.out.println("Producer\tEND\t\t--\t\t--");
     }
 }
 
 class BoundedBuffer {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
-        System.out.println("program starting");
-        Buffer buffer = new Buffer(4); // buffer has size 5
+        System.out.println("program starting\n");
+        System.out.println("Thread\t\tStatus\t\tPut\t\tGot\n");
+        Buffer buffer = new Buffer(4);
         Producer prod = new Producer(buffer);
         Consumer cons = new Consumer(buffer);
+
         prod.start();
         cons.start();
     }
